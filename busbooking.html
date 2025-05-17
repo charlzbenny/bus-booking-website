@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1" name="viewport"/>
+  <title>Bus Booking App</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;display=swap" rel="stylesheet"/>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    #seat-selection {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.5rem;
+      max-width: 360px;
+      margin-top: 0.5rem;
+    }
+    #seat-selection .seat {
+      background-color: #e5e7eb; /* gray-200 */
+      border-radius: 0.75rem; /* more rounded for seat shape */
+      padding: 0.75rem 0;
+      font-size: 0.875rem; /* text-sm */
+      font-weight: 600; /* font-semibold */
+      color: #374151; /* gray-700 */
+      cursor: pointer;
+      transition: background-color 0.3s;
+      user-select: none;
+      text-align: center;
+      border: 1px solid transparent;
+      box-shadow: inset 0 -4px 0 rgba(0,0,0,0.1);
+      width: 100%;
+      aspect-ratio: 1 / 1.2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #seat-selection .seat:hover {
+      background-color: #6366f1; /* indigo-500 */
+      color: white;
+    }
+    #seat-selection .seat.selected {
+      background-color: #4f46e5; /* indigo-700 */
+      color: white;
+      border-color: #4338ca; /* indigo-800 */
+    }
+    #seat-selection .aisle {
+      pointer-events: none;
+      background: transparent;
+      border: none;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+  <!-- Login & Signup Page -->
+  <div class="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-blue-600 to-indigo-700 px-4" id="auth-page">
+   <div class="bg-white rounded-lg shadow-lg p-8 max-w-md w-full relative overflow-hidden">
+    <!-- Decorative bus graphic top right -->
+    <img alt="Stylized blue bus icon with wheels and windows, cartoon style" class="absolute top-4 right-4 opacity-20 select-none pointer-events-none" draggable="false" height="150" src="https://storage.googleapis.com/a1aa/image/0923c71e-4628-4c95-8f6c-da9176d4ff00.jpg" width="150"/>
+    <!-- Login Form -->
+    <div id="login-form-container">
+     <h1 class="text-3xl font-semibold text-center mb-6 text-indigo-700 flex items-center justify-center gap-3">
+      <i class="fas fa-bus-alt text-indigo-600 text-4xl"></i>
+      Bus Booking Login
+     </h1>
+     <form class="space-y-6" id="login-form">
+      <div>
+       <label class="block text-gray-700 font-medium mb-1" for="login-username">Username</label>
+       <input autocomplete="username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" id="login-username" name="username" placeholder="Enter your username" required type="text"/>
+      </div>
+      <div>
+       <label class="block text-gray-700 font-medium mb-1" for="login-password">Password</label>
+       <input autocomplete="current-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" id="login-password" name="password" placeholder="Enter your password" required type="password"/>
+      </div>
+      <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-md transition" type="submit">Login</button>
+     </form>
+     <p class="text-red-600 mt-4 text-center hidden" id="login-error">Invalid username or password.</p>
+     <p class="mt-6 text-center text-gray-700">
+      Don't have an account?
+      <button class="text-indigo-600 font-semibold hover:underline focus:outline-none" id="show-signup-btn">Create one</button>
+     </p>
+    </div>
+    <!-- Signup Form -->
+    <div class="hidden" id="signup-form-container">
+     <h1 class="text-3xl font-semibold text-center mb-6 text-indigo-700 flex items-center justify-center gap-3">
+      <i class="fas fa-user-plus text-indigo-600 text-4xl"></i>
+      Create New Account
+     </h1>
+     <form class="space-y-6" id="signup-form">
+      <div>
+       <label class="block text-gray-700 font-medium mb-1" for="signup-username">Username</label>
+       <input autocomplete="username" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" id="signup-username" maxlength="20" minlength="3" name="username" pattern="^[a-zA-Z0-9_]+$" placeholder="Choose a username" required title="Username should be 3-20 characters and contain only letters, numbers, and underscores." type="text"/>
+      </div>
+      <div>
+       <label class="block text-gray-700 font-medium mb-1" for="signup-password">Password</label>
+       <input autocomplete="new-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" id="signup-password" minlength="6" name="password" placeholder="Create a password" required type="password"/>
+      </div>
+      <div>
+       <label class="block text-gray-700 font-medium mb-1" for="signup-password-confirm">Confirm Password</label>
+       <input autocomplete="new-password" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" id="signup-password-confirm" minlength="6" name="passwordConfirm" placeholder="Confirm your password" required type="password"/>
+      </div>
+      <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 rounded-md transition" type="submit">Create Account</button>
+     </form>
+     <p class="text-red-600 mt-4 text-center hidden" id="signup-error"></p>
+     <p class="mt-6 text-center text-gray-700">
+      Already have an account?
+      <button class="text-indigo-600 font-semibold hover:underline focus:outline-none" id="show-login-btn">Login here</button>
+     </p>
+    </div>
+   </div>
+  </div>
+  <!-- Main App -->
+  <div class="hidden flex flex-col min-h-screen" id="app">
+   <!-- Header -->
+   <header class="bg-indigo-700 text-white shadow-md">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+     <h1 class="text-2xl font-bold flex items-center gap-2">
+      <i class="fas fa-bus-alt text-yellow-300"></i>
+      Bus Booking
+     </h1>
+     <button class="bg-indigo-600 hover:bg-indigo-800 px-3 py-1 rounded-md text-sm font-semibold transition" id="logout-btn">Logout</button>
+    </div>
+   </header>
+   <!-- Hero Section with bus graphic -->
+   <section class="bg-indigo-600 text-white py-12">
+    <div class="container mx-auto px-4 flex flex-col md:flex-row items-center gap-8">
+     <div class="md:w-1/2 text-center md:text-left">
+      <h2 class="text-4xl font-extrabold mb-4 leading-tight drop-shadow-lg">Your Journey Starts Here</h2>
+      <p class="text-lg max-w-md mx-auto md:mx-0 drop-shadow-md">Book bus tickets easily and travel comfortably across major cities. Find the best routes, prices, and bus classes all in one place.</p>
+      <button class="mt-6 bg-yellow-400 hover:bg-yellow-500 text-indigo-900 font-bold py-3 px-6 rounded-lg shadow-lg transition" id="scroll-to-booking">Book Now <i class="fas fa-arrow-right ml-2"></i></button>
+     </div>
+     <div class="md:w-1/2 flex justify-center">
+      <img alt="Modern stylized bus illustration with bright colors, showing a bus on a road with trees and clouds" class="rounded-lg shadow-lg" draggable="false" height="250" src="https://storage.googleapis.com/a1aa/image/ce7da979-c479-4a7d-b44f-3fc3f725c77c.jpg" width="400"/>
+     </div>
+    </div>
+   </section>
+   <!-- Features Section -->
+   <section class="container mx-auto px-4 py-12">
+    <h3 class="text-3xl font-bold text-center text-indigo-700 mb-10">Why Choose Us?</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-5xl mx-auto">
+     <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center text-center">
+      <img alt="Icon representing fast booking with a stopwatch and checkmark" class="mb-4" draggable="false" height="100" src="https://storage.googleapis.com/a1aa/image/f3fbfbb8-3238-401e-30b9-8167f1f53427.jpg" width="100"/>
+      <h4 class="text-xl font-semibold mb-2 text-indigo-700">Fast &amp; Easy Booking</h4>
+      <p class="text-gray-600">Quickly find and book your bus tickets with just a few clicks.</p>
+     </div>
+     <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center text-center">
+      <img alt="Icon representing safe travel with a shield and bus" class="mb-4" draggable="false" height="100" src="https://storage.googleapis.com/a1aa/image/36553b35-77f2-490d-ec76-da3bfa81061f.jpg" width="100"/>
+      <h4 class="text-xl font-semibold mb-2 text-indigo-700">Safe &amp; Reliable</h4>
+      <p class="text-gray-600">Travel with confidence on buses that prioritize your safety and comfort.</p>
+     </div>
+     <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col items-center text-center">
+      <img alt="Icon representing 24/7 customer support with a headset and chat bubbles" class="mb-4" draggable="false" height="100" src="https://storage.googleapis.com/a1aa/image/93dba0cf-3652-469d-ef80-7c2f652d43c0.jpg" width="100"/>
+      <h4 class="text-xl font-semibold mb-2 text-indigo-700">24/7 Customer Support</h4>
+      <p class="text-gray-600">Our team is here to help you anytime, anywhere.</p>
+     </div>
+    </div>
+   </section>
+   <!-- Booking Section -->
+   <main class="flex-grow container mx-auto px-4 py-8 max-w-4xl">
+    <section class="bg-white rounded-lg shadow-md p-6">
+     <h2 class="text-xl font-semibold mb-6 text-indigo-700 flex items-center gap-2">
+      <i class="fas fa-ticket-alt text-yellow-400"></i>
+      Book Your Bus Ticket
+     </h2>
+     <form class="space-y-6" id="booking-form">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+       <div>
+        <label class="block font-medium text-gray-700 mb-1" for="from">From</label>
+        <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" id="from" name="from" required>
+         <option disabled selected value="">Select departure city</option>
+         <option value="New York">New York</option>
+         <option value="Washington DC">Washington DC</option>
+         <option value="Boston">Boston</option>
+         <option value="Philadelphia">Philadelphia</option>
+         <option value="Chicago">Chicago</option>
+         <option value="San Francisco">San Francisco</option>
+         <option value="Los Angeles">Los Angeles</option>
+         <option value="Miami">Miami</option>
+         <option value="Houston">Houston</option>
+         <option value="Seattle">Seattle</option>
+        </select>
+       </div>
+       <div>
+        <label class="block font-medium text-gray-700 mb-1" for="to">To</label>
+        <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" id="to" name="to" required>
+         <option disabled selected value="">Select destination city</option>
+         <option value="New York">New York</option>
+         <option value="Washington DC">Washington DC</option>
+         <option value="Boston">Boston</option>
+         <option value="Philadelphia">Philadelphia</option>
+         <option value="Chicago">Chicago</option>
+         <option value="San Francisco">San Francisco</option>
+         <option value="Los Angeles">Los Angeles</option>
+         <option value="Miami">Miami</option>
+         <option value="Houston">Houston</option>
+         <option value="Seattle">Seattle</option>
+        </select>
+       </div>
+       <div>
+        <label class="block font-medium text-gray-700 mb-1" for="date">Date</label>
+        <input class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" id="date" min="" name="date" required type="date"/>
+       </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+       <div>
+        <label class="block font-medium text-gray-700 mb-1" for="passengers">Passengers</label>
+        <input class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" id="passengers" max="10" min="1" name="passengers" required type="number" value="1"/>
+       </div>
+       <div>
+        <label class="block font-medium text-gray-700 mb-1" for="class">Class</label>
+        <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" id="class" name="class" required>
+         <option disabled selected value="">Select class</option>
+         <option value="Economy">Economy</option>
+         <option value="Business">Business</option>
+         <option value="First Class">First Class</option>
+        </select>
+       </div>
+      </div>
+      <button class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-md transition flex justify-center items-center gap-2" type="submit">
+       <i class="fas fa-search"></i>
+       Search Buses
+      </button>
+     </form>
+    <!-- Seat Selection -->
+    <div class="mt-6 hidden" id="seat-selection-container">
+     <label class="block font-medium text-gray-700 mb-2">Select Seats (Max 40)</label>
+     <div id="seat-selection" class="grid grid-cols-8 gap-2 max-w-md">
+      <!-- Seats will be generated here -->
+     </div>
+     <p class="text-sm text-red-600 mt-2 hidden" id="seat-error">Please select seats equal to the number of passengers.</p>
+     <button id="confirm-seat-selection" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition">Confirm Booking</button>
+    </div>
+    </section>
+    <!-- Search Results -->
+    <section class="max-w-4xl mx-auto mt-10 hidden" id="search-results">
+     <h3 class="text-lg font-semibold mb-4 text-indigo-700 flex items-center gap-2">
+      <i class="fas fa-bus"></i>
+      Available Buses
+     </h3>
+     <div class="space-y-4" id="buses-list"></div>
+    </section>
+    <!-- Booking Confirmation -->
+    <section class="max-w-4xl mx-auto mt-10 hidden bg-green-50 border border-green-300 rounded-lg p-6" id="booking-confirmation">
+     <h3 class="text-lg font-semibold mb-4 text-green-700 flex items-center gap-2">
+      <i class="fas fa-check-circle"></i>
+      Booking Confirmed
+     </h3>
+     <div class="text-green-900" id="confirmation-details"></div>
+     <button class="mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition" id="new-booking-btn">Book Another Ticket</button>
+    </section>
+   </main>
+   <!-- Reviews Section -->
+   <section class="bg-white rounded-lg shadow-md p-6 mb-10" id="reviews-section">
+    <h2 class="text-xl font-semibold mb-6 text-indigo-700 flex items-center gap-2">
+     <i class="fas fa-star text-yellow-400"></i>
+     Passenger Reviews
+    </h2>
+    <div id="reviews-container" class="space-y-6 bg-indigo-50 p-4 rounded-lg shadow-inner border border-indigo-200">
+     <!-- Reviews will be dynamically inserted here -->
+    </div>
+    <form id="review-form" class="mt-6 space-y-4 bg-white p-6 rounded-lg shadow-md border border-indigo-300">
+      <label for="review-text" class="block font-medium text-gray-700">Write a Review</label>
+      <textarea id="review-text" rows="4" class="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Share your experience..." required></textarea>
+      <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition">Submit Review</button>
+    </form>
+   </section>
+   <!-- Footer -->
+   <footer class="bg-indigo-700 text-white text-center py-6 mt-auto">
+    <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+     <p>© 2024 Bus Booking App. All rights reserved.</p>
+     <div class="flex gap-6 text-yellow-300 text-xl">
+      <a aria-label="Facebook" class="hover:text-yellow-400" href="#"><i class="fab fa-facebook-square"></i></a>
+      <a aria-label="Twitter" class="hover:text-yellow-400" href="#"><i class="fab fa-twitter-square"></i></a>
+      <a aria-label="Instagram" class="hover:text-yellow-400" href="#"><i class="fab fa-instagram-square"></i></a>
+     </div>
+    </div>
+   </footer>
+  </div>
+  <script>
+    // Simple in-memory user database (for demo purposes)
+    // Load users from localStorage or initialize default users
+    const USERS_KEY = "bus_booking_users";
+    let users = JSON.parse(localStorage.getItem(USERS_KEY)) || [
+      { username: "user1", password: "password1" },
+      { username: "admin", password: "admin123" },
+    ];
+
+    // Save users to localStorage
+    function saveUsers() {
+      localStorage.setItem(USERS_KEY, JSON.stringify(users));
+    }
+
+    // Sample bus data for search results
+    const busData = [
+      {
+        id: 1,
+        busName: "Express Line",
+        from: "New York",
+        to: "Washington DC",
+        departure: "08:00 AM",
+        arrival: "12:00 PM",
+        duration: "4h",
+        price: { Economy: 25, Business: 40, "First Class": 60 },
+        image: "https://placehold.co/400x200/png?text=Express+Line+Bus",
+        alt: "Blue and white modern express bus driving on highway with city skyline in background",
+      },
+      {
+        id: 2,
+        busName: "City Cruiser",
+        from: "Boston",
+        to: "Philadelphia",
+        departure: "09:30 AM",
+        arrival: "02:30 PM",
+        duration: "5h",
+        price: { Economy: 30, Business: 45, "First Class": 65 },
+        image: "https://placehold.co/400x200/png?text=City+Cruiser+Bus",
+        alt: "Red and white city cruiser bus parked at bus stop with passengers boarding",
+      },
+      {
+        id: 3,
+        busName: "Coastal Rider",
+        from: "San Francisco",
+        to: "Los Angeles",
+        departure: "07:00 AM",
+        arrival: "01:00 PM",
+        duration: "6h",
+        price: { Economy: 35, Business: 50, "First Class": 70 },
+        image: "https://placehold.co/400x200/png?text=Coastal+Rider+Bus",
+        alt: "Green and yellow coastal rider bus driving along scenic coastal highway with ocean view",
+      },
+      {
+        id: 4,
+        busName: "Mountain Express",
+        from: "Seattle",
+        to: "Chicago",
+        departure: "06:00 AM",
+        arrival: "06:00 PM",
+        duration: "12h",
+        price: { Economy: 60, Business: 90, "First Class": 120 },
+        image: "https://placehold.co/400x200/png?text=Mountain+Express+Bus",
+        alt: "White and blue mountain express bus driving through mountainous terrain with pine trees",
+      },
+      {
+        id: 5,
+        busName: "Sunshine Travels",
+        from: "Miami",
+        to: "Houston",
+        departure: "10:00 AM",
+        arrival: "08:00 PM",
+        duration: "10h",
+        price: { Economy: 50, Business: 75, "First Class": 100 },
+        image: "https://placehold.co/400x200/png?text=Sunshine+Travels+Bus",
+        alt: "Yellow and orange sunshine travels bus parked at sunny bus terminal with palm trees",
+      },
+      {
+        id: 6,
+        busName: "Night Rider",
+        from: "Philadelphia",
+        to: "New York",
+        departure: "09:00 PM",
+        arrival: "12:00 AM",
+        duration: "3h",
+        price: { Economy: 20, Business: 35, "First Class": 50 },
+        image: "https://placehold.co/400x200/png?text=Night+Rider+Bus",
+        alt: "Black and silver night rider bus driving on highway at night with city lights",
+      },
+      {
+        id: 7,
+        busName: "Rapid Transit",
+        from: "Chicago",
+        to: "Boston",
+        departure: "05:00 AM",
+        arrival: "03:00 PM",
+        duration: "10h",
+        price: { Economy: 55, Business: 80, "First Class": 110 },
+        image: "https://placehold.co/400x200/png?text=Rapid+Transit+Bus",
+        alt: "Orange and white rapid transit bus driving on interstate highway with countryside background",
+      },
+      {
+        id: 8,
+        busName: "Metro Link",
+        from: "Washington DC",
+        to: "Miami",
+        departure: "11:00 AM",
+        arrival: "11:00 PM",
+        duration: "12h",
+        price: { Economy: 65, Business: 95, "First Class": 130 },
+        image: "https://placehold.co/400x200/png?text=Metro+Link+Bus",
+        alt: "Blue and gray metro link bus driving through urban area with skyscrapers",
+      },
+      {
+        id: 9,
+        busName: "Desert Star",
+        from: "Houston",
+        to: "San Francisco",
+        departure: "08:00 AM",
+        arrival: "08:00 PM",
+        duration: "12h",
+        price: { Economy: 70, Business: 100, "First Class": 140 },
+        image: "https://placehold.co/400x200/png?text=Desert+Star+Bus",
+        alt: "Brown and beige desert star bus driving through desert landscape with cacti",
+      },
+      {
+        id: 10,
+        busName: "Lakeside Express",
+        from: "Seattle",
+        to: "Philadelphia",
+        departure: "07:30 AM",
+        arrival: "07:30 PM",
+        duration: "12h",
+        price: { Economy: 60, Business: 90, "First Class": 120 },
+        image: "https://placehold.co/400x200/png?text=Lakeside+Express+Bus",
+        alt: "Blue and white lakeside express bus driving along lake shore with mountains in background",
+      }
+    ];
+
+    // Store bookings in localStorage for persistence
+    const BOOKINGS_KEY = "bus_bookings";
+
+    // Utility: Save bookings to localStorage
+    function saveBooking(booking) {
+      const bookings = JSON.parse(localStorage.getItem(BOOKINGS_KEY)) || [];
+      bookings.push(booking);
+      localStorage.setItem(BOOKINGS_KEY, JSON.stringify(bookings));
+    }
+
+    // Utility: Format date to readable string
+    function formatDate(dateStr) {
+      const options = { year: "numeric", month: "long", day: "numeric" };
+      const date = new Date(dateStr + "T00:00:00");
+      return date.toLocaleDateString(undefined, options);
+    }
+
+    // Set minimum date for date input to today
+    const dateInput = document.getElementById("date");
+    const todayISO = new Date().toISOString().split("T")[0];
+    dateInput.setAttribute("min", todayISO);
+
+    // Elements for auth
+    const authPage = document.getElementById("auth-page");
+    const loginFormContainer = document.getElementById("login-form-container");
+    const signupFormContainer = document.getElementById("signup-form-container");
+    const loginForm = document.getElementById("login-form");
+    const signupForm = document.getElementById("signup-form");
+    const loginError = document.getElementById("login-error");
+    const signupError = document.getElementById("signup-error");
+    const showSignupBtn = document.getElementById("show-signup-btn");
+    const showLoginBtn = document.getElementById("show-login-btn");
+
+    const app = document.getElementById("app");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    function isLoggedIn() {
+      return sessionStorage.getItem("loggedInUser") !== null;
+    }
+
+    function showApp() {
+      authPage.classList.add("hidden");
+      app.classList.remove("hidden");
+    }
+
+    function showAuth() {
+      authPage.classList.remove("hidden");
+      app.classList.add("hidden");
+    }
+
+    // Switch to signup form
+    showSignupBtn.addEventListener("click", () => {
+      loginFormContainer.classList.add("hidden");
+      signupFormContainer.classList.remove("hidden");
+      loginError.classList.add("hidden");
+      signupError.classList.add("hidden");
+      loginForm.reset();
+      signupForm.reset();
+    });
+
+    // Switch to login form
+    showLoginBtn.addEventListener("click", () => {
+      signupFormContainer.classList.add("hidden");
+      loginFormContainer.classList.remove("hidden");
+      loginError.classList.add("hidden");
+      signupError.classList.add("hidden");
+      loginForm.reset();
+      signupForm.reset();
+    });
+
+    // Login form handling
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const username = loginForm["username"].value.trim();
+      const password = loginForm["password"].value.trim();
+
+      const user = users.find(
+        (u) => u.username.toLowerCase() === username.toLowerCase() && u.password === password
+      );
+
+      if (user) {
+        sessionStorage.setItem("loggedInUser", user.username);
+        loginError.classList.add("hidden");
+        loginForm.reset();
+        showApp();
+      } else {
+        loginError.classList.remove("hidden");
+      }
+    });
+
+    // Signup form handling
+    signupForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      signupError.classList.add("hidden");
+      const username = signupForm["username"].value.trim();
+      const password = signupForm["password"].value;
+      const passwordConfirm = signupForm["passwordConfirm"].value;
+
+      // Validate username pattern and length (already enforced by input attributes)
+      if (username.length < 3 || username.length > 20) {
+        signupError.textContent = "Username must be between 3 and 20 characters.";
+        signupError.classList.remove("hidden");
+        return;
+      }
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        signupError.textContent = "Username can only contain letters, numbers, and underscores.";
+        signupError.classList.remove("hidden");
+        return;
+      }
+
+      // Check if username already exists (case insensitive)
+      if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+        signupError.textContent = "Username already taken. Please choose another.";
+        signupError.classList.remove("hidden");
+        return;
+      }
+
+      // Password length check (already enforced by input attributes)
+      if (password.length < 6) {
+        signupError.textContent = "Password must be at least 6 characters.";
+        signupError.classList.remove("hidden");
+        return;
+      }
+
+      // Password confirmation check
+      if (password !== passwordConfirm) {
+        signupError.textContent = "Passwords do not match.";
+        signupError.classList.remove("hidden");
+        return;
+      }
+
+      // Add new user
+      users.push({ username, password });
+      saveUsers();
+
+      // Auto-login after signup
+      sessionStorage.setItem("loggedInUser", username);
+      signupError.classList.add("hidden");
+      signupForm.reset();
+      showApp();
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      sessionStorage.removeItem("loggedInUser");
+      resetApp();
+      showAuth();
+    });
+
+    // Booking form and search results
+    const bookingForm = document.getElementById("booking-form");
+    const searchResults = document.getElementById("search-results");
+    const busesList = document.getElementById("buses-list");
+    const bookingConfirmation = document.getElementById("booking-confirmation");
+    const confirmationDetails = document.getElementById("confirmation-details");
+    const newBookingBtn = document.getElementById("new-booking-btn");
+    const scrollToBookingBtn = document.getElementById("scroll-to-booking");
+    const seatSelectionContainer = document.getElementById("seat-selection-container");
+    const confirmSeatSelectionBtn = document.getElementById("confirm-seat-selection");
+
+    let selectedBus = null;
+    let selectedBookingInfo = null;
+
+    // Reset app to initial state
+    function resetApp() {
+      bookingForm.reset();
+      busesList.innerHTML = "";
+      searchResults.classList.add("hidden");
+      bookingConfirmation.classList.add("hidden");
+      bookingForm.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Render bus cards for search results
+    function renderBuses(buses, bookingInfo) {
+      busesList.innerHTML = "";
+      if (buses.length === 0) {
+        busesList.innerHTML =
+          '<p class="text-center text-gray-600">No buses found for the selected route and date.</p>';
+        return;
+      }
+
+      buses.forEach((bus) => {
+        const price = bus.price[bookingInfo.class];
+        const totalPrice = price * bookingInfo.passengers;
+
+        const busCard = document.createElement("div");
+        busCard.className =
+          "flex flex-col md:flex-row bg-white rounded-lg shadow-md overflow-hidden";
+
+        const img = document.createElement("img");
+        img.src = bus.image;
+        img.alt = bus.alt;
+        img.className = "w-full md:w-48 object-cover";
+
+        const content = document.createElement("div");
+        content.className = "p-4 flex flex-col justify-between flex-grow";
+
+        const title = document.createElement("h4");
+        title.className = "text-lg font-semibold text-indigo-700 mb-1";
+        title.textContent = bus.busName;
+
+        const route = document.createElement("p");
+        route.className = "text-gray-700 mb-1";
+        route.textContent = `${bus.from} → ${bus.to}`;
+
+        const timing = document.createElement("p");
+        timing.className = "text-gray-600 mb-1";
+        timing.textContent = `Departure: ${bus.departure} | Arrival: ${bus.arrival} | Duration: ${bus.duration}`;
+
+        const priceInfo = document.createElement("p");
+        priceInfo.className = "text-gray-800 font-semibold mb-3";
+        priceInfo.textContent = `Price per passenger (${bookingInfo.class}): $${price}`;
+
+        const totalPriceInfo = document.createElement("p");
+        totalPriceInfo.className = "text-gray-900 font-bold mb-3";
+        totalPriceInfo.textContent = `Total Price (${bookingInfo.passengers} passenger${bookingInfo.passengers > 1 ? "s" : ""}): $${totalPrice}`;
+
+        const bookBtn = document.createElement("button");
+        bookBtn.className =
+          "self-start bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md transition";
+        bookBtn.textContent = "Select Seats";
+        bookBtn.addEventListener("click", () => {
+          // Hide search results and booking form
+          bookingForm.classList.add("hidden");
+          searchResults.classList.add("hidden");
+
+          // Show seat selection container
+          const seatSelectionContainer = document.getElementById("seat-selection-container");
+          seatSelectionContainer.classList.remove("hidden");
+
+          // Store selected bus and booking info globally
+          selectedBus = bus;
+          selectedBookingInfo = bookingInfo;
+
+          // Generate seats for selection
+          generateSeats();
+
+          // Scroll to seat selection container
+          seatSelectionContainer.scrollIntoView({ behavior: "smooth" });
+        });
+
+        content.appendChild(title);
+        content.appendChild(route);
+        content.appendChild(timing);
+        content.appendChild(priceInfo);
+        content.appendChild(totalPriceInfo);
+        content.appendChild(bookBtn);
+
+        busCard.appendChild(img);
+        busCard.appendChild(content);
+
+        busesList.appendChild(busCard);
+      });
+      // Scroll to results
+      searchResults.scrollIntoView({ behavior: "smooth" });
+    }
+
+    // Confirm booking and show confirmation section
+    function confirmBooking(bus, bookingInfo, totalPrice) {
+      // This function will be called after seat selection and confirmation
+      bookingForm.classList.add("hidden");
+      searchResults.classList.add("hidden");
+      seatSelectionContainer.classList.add("hidden");
+      bookingConfirmation.classList.remove("hidden");
+
+      const bookingDateFormatted = formatDate(bookingInfo.date);
+
+      const seatsDisplay = bookingInfo.seats && bookingInfo.seats.length > 0 ? bookingInfo.seats.join(", ") : "N/A";
+
+      confirmationDetails.innerHTML = `
+        <p><strong>Bus:</strong> ${bus.busName}</p>
+        <p><strong>Route:</strong> ${bus.from} → ${bus.to}</p>
+        <p><strong>Date:</strong> ${bookingDateFormatted}</p>
+        <p><strong>Departure Time:</strong> ${bus.departure}</p>
+        <p><strong>Passengers:</strong> ${bookingInfo.passengers}</p>
+        <p><strong>Class:</strong> ${bookingInfo.class}</p>
+        <p><strong>Seats:</strong> ${seatsDisplay}</p>
+        <p><strong>Total Price:</strong> $${totalPrice}</p>
+      `;
+
+      // Save booking to localStorage
+      const bookingRecord = {
+        id: Date.now(),
+        user: sessionStorage.getItem("loggedInUser"),
+        busId: bus.id,
+        busName: bus.busName,
+        from: bus.from,
+        to: bus.to,
+        date: bookingInfo.date,
+        departure: bus.departure,
+        passengers: bookingInfo.passengers,
+        class: bookingInfo.class,
+        seats: bookingInfo.seats,
+        totalPrice,
+      };
+      saveBooking(bookingRecord);
+      bookingConfirmation.scrollIntoView({ behavior: "smooth" });
+    }
+
+    // Handle new booking button click
+    newBookingBtn.addEventListener("click", () => {
+      resetApp();
+      bookingForm.scrollIntoView({ behavior: "smooth" });
+    });
+
+    // Handle confirm seat selection button click
+    confirmSeatSelectionBtn.addEventListener("click", () => {
+      const selectedSeats = Array.from(document.querySelectorAll("#seat-selection .seat.selected")).map(seat => seat.dataset.seatNumber);
+      const passengers = selectedBookingInfo.passengers;
+
+      if (selectedSeats.length !== passengers) {
+        document.getElementById("seat-error").classList.remove("hidden");
+        return;
+      } else {
+        document.getElementById("seat-error").classList.add("hidden");
+      }
+
+      // Add seats to booking info
+      selectedBookingInfo.seats = selectedSeats;
+
+      // Calculate total price
+      const price = selectedBus.price[selectedBookingInfo.class];
+      const totalPrice = price * passengers;
+
+      // Confirm booking
+      confirmBooking(selectedBus, selectedBookingInfo, totalPrice);
+    });
+
+    // Handle booking form submission (search buses)
+    bookingForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+
+      const from = bookingForm.from.value;
+      const to = bookingForm.to.value;
+      const date = bookingForm.date.value;
+      const passengers = parseInt(bookingForm.passengers.value, 10);
+      const busClass = bookingForm.class.value;
+
+      if (from === to) {
+        alert("Departure and destination cities cannot be the same.");
+        return;
+      }
+
+      // Filter buses matching from and to
+      const filteredBuses = busData.filter(
+        (bus) => bus.from === from && bus.to === to
+      );
+
+      if (filteredBuses.length === 0) {
+        busesList.innerHTML =
+          '<p class="text-center text-gray-600">No buses found for the selected route and date.</p>';
+      }
+
+      renderBuses(filteredBuses, {
+        date,
+        passengers,
+        class: busClass,
+      });
+
+      searchResults.classList.remove("hidden");
+      bookingConfirmation.classList.add("hidden");
+    });
+
+    // Generate seat selection UI
+    function generateSeats() {
+      const seatContainer = document.getElementById("seat-selection");
+      seatContainer.innerHTML = "";
+      for (let i = 1; i <= 40; i++) {
+        if (i % 4 === 3) {
+          // Insert aisle spacer after 2 seats
+          const aisle = document.createElement("div");
+          aisle.className = "aisle";
+          seatContainer.appendChild(aisle);
+        }
+        const seat = document.createElement("button");
+        seat.type = "button";
+        seat.className = "seat";
+        seat.textContent = i;
+        seat.dataset.seatNumber = i;
+        seat.addEventListener("click", () => {
+          const passengers = parseInt(bookingForm.passengers.value, 10);
+          const selectedSeats = Array.from(document.querySelectorAll("#seat-selection .seat.selected"));
+          if (seat.classList.contains("selected")) {
+            seat.classList.remove("selected");
+          } else {
+            if (selectedSeats.length < passengers) {
+              seat.classList.add("selected");
+            } else {
+              alert(`You can only select up to ${passengers} seats.`);
+            }
+          }
+        });
+        seatContainer.appendChild(seat);
+      }
+    }
+
+    // Initialize seat selection on page load
+    generateSeats();
+
+    // Scroll to booking form when "Book Now" button in hero section is clicked
+    scrollToBookingBtn.addEventListener("click", () => {
+      bookingForm.scrollIntoView({ behavior: "smooth" });
+    });
+
+    // On page load, check if user is logged in and show appropriate view
+    document.addEventListener("DOMContentLoaded", () => {
+      if (isLoggedIn()) {
+        showApp();
+      } else {
+        showAuth();
+      }
+    });
+  </script>
+  <script>
+    // Predefined reviews
+    const predefinedReviews = [
+      { username: "Alice", rating: 5, text: "Great service and comfortable buses!" },
+      { username: "Bob", rating: 4, text: "Easy booking process and friendly staff." },
+      { username: "Charlie", rating: 5, text: "Highly recommend for long-distance travel." }
+    ];
+
+    // Load reviews from localStorage or use predefined
+    const REVIEWS_KEY = "bus_booking_reviews";
+    let reviews = JSON.parse(localStorage.getItem(REVIEWS_KEY)) || predefinedReviews;
+
+    const reviewsContainer = document.getElementById("reviews-container");
+    const reviewForm = document.getElementById("review-form");
+    const reviewText = document.getElementById("review-text");
+
+    // Function to render reviews
+    function renderReviews() {
+      reviewsContainer.innerHTML = "";
+      reviews.forEach((review) => {
+        const reviewDiv = document.createElement("div");
+        reviewDiv.className = "border border-gray-300 rounded-md p-4";
+
+        const usernameP = document.createElement("p");
+        usernameP.className = "font-semibold text-indigo-700 mb-1";
+        usernameP.textContent = review.username;
+
+        const ratingP = document.createElement("p");
+        ratingP.className = "text-yellow-400 mb-2";
+        ratingP.innerHTML = "★".repeat(review.rating) + "☆".repeat(5 - review.rating);
+
+        const textP = document.createElement("p");
+        textP.className = "text-gray-700";
+        textP.textContent = review.text;
+
+        reviewDiv.appendChild(usernameP);
+        reviewDiv.appendChild(ratingP);
+        reviewDiv.appendChild(textP);
+
+        reviewsContainer.appendChild(reviewDiv);
+      });
+    }
+
+    // Handle review form submission
+    reviewForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const text = reviewText.value.trim();
+      if (text.length === 0) return;
+
+      // For demo, use a placeholder username and fixed rating
+      const newReview = {
+        username: "Anonymous",
+        rating: 5,
+        text,
+      };
+
+      reviews.unshift(newReview);
+      localStorage.setItem(REVIEWS_KEY, JSON.stringify(reviews));
+      renderReviews();
+      reviewForm.reset();
+    });
+
+    // Initial render
+    renderReviews();
+  </script>
+</body>
+</html>
